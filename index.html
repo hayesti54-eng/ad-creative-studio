@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad Creative Studio — Project 001</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Syne:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0b0b;--surface:#141414;--surface2:#1c1c1c;
+  --border:#2a2a2a;--border2:#383838;
+  --text:#e8e4dc;--muted:#888;--muted2:#555;
+  --amber:#f0a500;--amber-dim:#8a5f00;--amber-bg:rgba(240,165,0,.08);
+  --green:#2ec27e;--green-bg:rgba(46,194,126,.1);
+  --red:#e05555;--red-bg:rgba(224,85,85,.1);
+  --blue:#4a9eff;
+  --mono:'IBM Plex Mono',monospace;--display:'Syne',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh}
+
+/* HEADER */
+header{border-bottom:1px solid var(--border);padding:1.1rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(11,11,11,.96);backdrop-filter:blur(8px);z-index:100}
+.logo{display:flex;align-items:center;gap:.75rem}
+.logo-mark{width:26px;height:26px;border:1.5px solid var(--amber);display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:13px;height:13px;fill:var(--amber)}
+.logo-text{font-family:var(--display);font-size:14px;font-weight:800;letter-spacing:.02em}
+.logo-sub{font-size:9px;color:var(--muted);letter-spacing:.08em;margin-top:1px}
+.mode-pill{font-size:9px;font-family:var(--mono);padding:3px 9px;border-radius:20px;letter-spacing:.05em}
+.mode-live{background:var(--green-bg);color:var(--green);border:1px solid rgba(46,194,126,.3)}
+.mode-error{background:var(--red-bg);color:var(--red);border:1px solid rgba(224,85,85,.3)}
+.mode-idle{background:rgba(136,136,136,.1);color:var(--muted);border:1px solid var(--border2)}
+
+/* LAYOUT */
+.container{max-width:1400px;margin:0 auto;padding:2rem}
+
+/* FORM */
+.brief-section{margin-bottom:2.5rem}
+.section-label{font-size:9px;letter-spacing:.12em;color:var(--amber);text-transform:uppercase;margin-bottom:1.1rem;display:flex;align-items:center;gap:.75rem}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.form-grid.full{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:.4rem}
+.field label{font-size:9px;letter-spacing:.07em;color:var(--muted);text-transform:uppercase}
+.field input,.field textarea,.field select{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:.6rem .75rem;border-radius:3px;outline:none;transition:border-color .15s;resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--amber)}
+.field textarea{min-height:72px}
+.field select option{background:var(--surface)}
+.hint{font-size:9px;color:var(--muted2);margin-top:.2rem}
+
+/* PLATFORMS */
+.platform-grid{display:flex;flex-wrap:wrap;gap:.4rem}
+.plt-btn{border:1px solid var(--border);padding:.35rem .8rem;font-size:10px;font-family:var(--mono);color:var(--muted);background:transparent;border-radius:3px;cursor:pointer;transition:all .15s;letter-spacing:.04em}
+.plt-btn:hover{border-color:var(--border2);color:var(--text)}
+.plt-btn.on{border-color:var(--amber);color:var(--amber);background:var(--amber-bg)}
+
+/* BUTTONS */
+.btn-generate{background:var(--amber);color:#000;border:none;padding:.7rem 2rem;font-family:var(--display);font-size:13px;font-weight:800;cursor:pointer;border-radius:3px;transition:all .15s;display:inline-flex;align-items:center;gap:.5rem}
+.btn-generate:hover{background:#ffb800;transform:translateY(-1px)}
+.btn-generate:active{transform:translateY(0)}
+.btn-generate:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-secondary{background:transparent;border:1px solid var(--border2);color:var(--muted);padding:.7rem 1.2rem;font-family:var(--mono);font-size:11px;cursor:pointer;border-radius:3px;transition:all .15s}
+.btn-secondary:hover{border-color:var(--text);color:var(--text)}
+.btn-secondary:disabled{opacity:.3;cursor:not-allowed}
+.gen-row{margin-top:1.25rem;display:flex;align-items:center;gap:.85rem;flex-wrap:wrap}
+.gen-note{font-size:9px;color:var(--muted)}
+
+/* LOADING */
+.loading-bar{height:2px;background:var(--border);border-radius:1px;overflow:hidden;margin-bottom:1.5rem;display:none}
+.loading-bar.active{display:block}
+.loading-fill{height:100%;background:var(--amber);width:0%;transition:width .4s ease;box-shadow:0 0 6px rgba(240,165,0,.4)}
+.loading-steps{display:none;flex-direction:column;gap:.4rem;margin-bottom:1.5rem}
+.loading-steps.active{display:flex}
+.step{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:.5rem;opacity:.4;transition:opacity .25s}
+.step.active{opacity:1;color:var(--text)}
+.step.done{opacity:.5;color:var(--green)}
+
+/* ERROR STATE */
+.error-state{border:1px solid rgba(224,85,85,.3);background:var(--red-bg);border-radius:4px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:none}
+.error-state.visible{display:block}
+.error-title{font-size:12px;font-weight:600;color:var(--red);margin-bottom:.35rem}
+.error-msg{font-size:11px;color:var(--muted);line-height:1.6}
+.error-actions{margin-top:.65rem;display:flex;gap:.5rem}
+.btn-retry{font-size:10px;padding:.35rem .9rem;border:1px solid var(--red);color:var(--red);background:transparent;cursor:pointer;border-radius:3px;font-family:var(--mono)}
+.btn-retry:hover{background:var(--red-bg)}
+
+/* RESULTS */
+.results-section{display:none}
+.results-section.active{display:block}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.6rem}
+.results-meta{font-size:10px;color:var(--muted)}
+.results-actions{display:flex;gap:.4rem;flex-wrap:wrap}
+.btn-sm{font-family:var(--mono);font-size:10px;padding:.35rem .85rem;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;border-radius:3px;transition:all .15s}
+.btn-sm:hover{color:var(--text);border-color:var(--text)}
+.brief-analysis{border:1px solid var(--border);padding:.85rem 1rem;border-left:2px solid var(--amber);border-radius:0 3px 3px 0;font-size:11px;line-height:1.7;margin-bottom:1.5rem;background:var(--surface)}
+.brief-analysis .label{font-size:8px;letter-spacing:.1em;color:var(--amber);margin-bottom:.3rem;text-transform:uppercase}
+
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(370px,1fr));gap:1.1rem}
+.card{border:1px solid var(--border);border-radius:5px;background:var(--surface);overflow:hidden;transition:border-color .15s}
+.card:hover{border-color:var(--border2)}
+.card.recommended{border-color:var(--amber)}
+.card-header{padding:.8rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)}
+.card-angle{font-family:var(--display);font-size:12px;font-weight:800;letter-spacing:.02em}
+.card-badges{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap}
+.badge{font-size:9px;padding:2px 7px;border-radius:2px;font-weight:600;letter-spacing:.04em}
+.badge-rec{background:var(--amber);color:#000}
+.badge-top{background:var(--green-bg);color:var(--green);border:1px solid rgba(46,194,126,.3)}
+.badge-high{background:rgba(74,158,255,.1);color:var(--blue);border:1px solid rgba(74,158,255,.2)}
+.badge-medium{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(240,165,0,.2)}
+.badge-low{background:var(--red-bg);color:var(--red);border:1px solid rgba(224,85,85,.2)}
+
+/* IMAGE */
+.card-image{height:150px;background:var(--surface2);display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border);overflow:hidden;position:relative}
+.card-image img{width:100%;height:100%;object-fit:cover}
+.img-placeholder{font-size:9px;color:var(--muted2);text-align:center;padding:.75rem;letter-spacing:.04em;line-height:1.6}
+.img-loading{font-size:9px;color:var(--muted);text-align:center;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* SCORES */
+.score-section{padding:.8rem 1rem;border-bottom:1px solid var(--border)}
+.score-top{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.6rem}
+.score-num{font-size:26px;font-weight:700;color:var(--amber);font-family:var(--display)}
+.score-lbl{font-size:9px;color:var(--muted);letter-spacing:.05em}
+.score-bars{display:flex;flex-direction:column;gap:.3rem}
+.score-row{display:flex;align-items:center;gap:.5rem}
+.score-name{font-size:8px;color:var(--muted);width:100px;flex-shrink:0;letter-spacing:.04em}
+.score-track{flex:1;height:2px;background:var(--border2);border-radius:1px;overflow:hidden}
+.score-fill{height:100%;border-radius:1px;transition:width .5s ease}
+.score-val{font-size:8px;width:22px;text-align:right;color:var(--muted)}
+.score-notes{font-size:9px;color:var(--muted);margin-top:.5rem;line-height:1.6}
+
+/* COPY TABS */
+.copy-section{padding:.8rem 1rem}
+.tab-row{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:.8rem;overflow-x:auto}
+.tab{font-size:9px;letter-spacing:.05em;padding:.35rem .7rem;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;background:transparent;border-top:none;border-left:none;border-right:none;font-family:var(--mono)}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+.copy-panel{display:none}
+.copy-panel.active{display:block}
+.copy-field{margin-bottom:.65rem}
+.copy-label{font-size:8px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:.25rem}
+.copy-value{font-size:11px;line-height:1.6;color:var(--text);background:var(--surface2);padding:.45rem .6rem;border-radius:2px;border:1px solid var(--border);cursor:pointer;transition:border-color .15s;position:relative;word-break:break-word}
+.copy-value:hover{border-color:var(--amber)}
+.copy-value:hover::after{content:'Copy';font-size:8px;letter-spacing:.06em;color:var(--amber);position:absolute;top:.3rem;right:.5rem}
+.char-count{font-size:8px;color:var(--muted);margin-top:.15rem;text-align:right}
+.char-over{color:var(--red)}
+.rationale-box{font-size:9px;color:var(--muted);line-height:1.6;padding:.5rem .6rem;background:var(--surface2);border-radius:2px;border-left:2px solid var(--border2);margin-top:.4rem}
+
+/* ITERATE */
+.iterate-section{padding:.7rem 1rem;border-top:1px solid var(--border);background:var(--surface2)}
+.iterate-label{font-size:8px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:.4rem}
+.iterate-row{display:flex;gap:.4rem}
+.iterate-input{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:10px;padding:.38rem .6rem;border-radius:3px;outline:none}
+.iterate-input:focus{border-color:var(--amber)}
+.btn-iterate{background:transparent;border:1px solid var(--amber-dim);color:var(--amber);padding:.38rem .8rem;font-family:var(--mono);font-size:10px;cursor:pointer;border-radius:3px;white-space:nowrap;transition:all .15s}
+.btn-iterate:hover{background:var(--amber-bg)}
+.btn-iterate:disabled{opacity:.3;cursor:not-allowed}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:5px;padding:1.5rem;max-width:600px;width:90%;max-height:80vh;overflow-y:auto}
+.modal-title{font-family:var(--display);font-size:14px;font-weight:800;margin-bottom:1rem}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;margin-top:-3px}
+.modal-close:hover{color:var(--text)}
+.export-textarea{width:100%;height:280px;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:10px;padding:.65rem;border-radius:3px;outline:none;resize:vertical}
+.modal-actions{margin-top:.75rem;display:flex;gap:.5rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.75rem;right:1.75rem;background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:11px;padding:.5rem .9rem;border-radius:3px;transform:translateY(70px);opacity:0;transition:all .22s;z-index:300;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:rgba(46,194,126,.4);color:var(--green)}
+
+/* FALLBACK NOTICE */
+.fallback-notice{font-size:9px;color:var(--muted);font-family:var(--mono);letter-spacing:.04em;padding:.35rem .6rem;border:1px solid var(--border);border-radius:3px;display:inline-flex;align-items:center;gap:.4rem;margin-left:.4rem}
+
+@media(max-width:700px){.form-grid{grid-template-columns:1fr}.cards-grid{grid-template-columns:1fr}.container{padding:1rem}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark"><svg viewBox="0 0 13 13"><path d="M2 6.5h9M6.5 2l4.5 4.5-4.5 4.5"/></svg></div>
+    <div>
+      <div class="logo-text">Ad Creative Studio</div>
+      <div class="logo-sub">Project 001 · Autonomous Generation Engine</div>
+    </div>
+  </div>
+  <span class="mode-pill mode-idle" id="modePill">READY</span>
+</header>
+
+<div class="container">
+
+  <!-- BRIEF FORM -->
+  <section class="brief-section">
+    <div class="section-label">01 — Campaign Brief</div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Product or Brand Name</label>
+        <input type="text" id="product" placeholder="e.g. Ember Coffee Mug" autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Monthly Ad Budget (optional)</label>
+        <input type="text" id="budget" placeholder="e.g. $2,000 / month">
+      </div>
+    </div>
+
+    <div class="form-grid full" style="margin-top:.85rem">
+      <div class="field">
+        <label>Product Description</label>
+        <textarea id="description" placeholder="What it does, key benefits, why people buy it — be specific"></textarea>
+      </div>
+    </div>
+
+    <div class="form-grid" style="margin-top:.85rem">
+      <div class="field">
+        <label>Target Audience</label>
+        <input type="text" id="audience" placeholder="e.g. Remote workers 28–45, coffee lovers, $80K+ income">
+      </div>
+      <div class="field">
+        <label>Campaign Goal</label>
+        <select id="goal">
+          <option value="conversions">Conversions / Purchases</option>
+          <option value="leads">Lead Generation</option>
+          <option value="awareness">Brand Awareness</option>
+          <option value="traffic">Website Traffic</option>
+          <option value="app_installs">App Installs</option>
+          <option value="video_views">Video Views</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid" style="margin-top:.85rem">
+      <div class="field">
+        <label>Creative Tone</label>
+        <select id="tone">
+          <option value="urgent and direct">Urgent and Direct</option>
+          <option value="warm and friendly">Warm and Friendly</option>
+          <option value="authoritative and confident">Authoritative and Confident</option>
+          <option value="playful and witty">Playful and Witty</option>
+          <option value="aspirational and inspiring">Aspirational and Inspiring</option>
+          <option value="educational and clear">Educational and Clear</option>
+          <option value="luxurious and refined">Luxurious and Refined</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Brand Voice Notes (optional)</label>
+        <input type="text" id="brandVoice" placeholder="e.g. Never say 'revolutionary'. Keep it simple.">
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:.85rem">
+      <label>Target Platforms</label>
+      <div class="platform-grid" id="platformGrid">
+        <button class="plt-btn on" data-p="Meta Feed">Meta Feed</button>
+        <button class="plt-btn on" data-p="Meta Stories">Meta Stories</button>
+        <button class="plt-btn on" data-p="Google Search">Google Search</button>
+        <button class="plt-btn on" data-p="Google Display">Google Display</button>
+      </div>
+    </div>
+
+    <!-- ERROR STATE -->
+    <div class="error-state" id="errorState">
+      <div class="error-title" id="errorTitle">Generation failed</div>
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="error-actions">
+        <button class="btn-retry" onclick="retryGeneration()">Retry</button>
+        <button class="btn-retry" onclick="hideError()" style="border-color:var(--muted);color:var(--muted)">Dismiss</button>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-bar" id="loadingBar"><div class="loading-fill" id="loadingFill"></div></div>
+    <div class="loading-steps" id="loadingSteps">
+      <div class="step" id="s1">Analysing brief and audience signals...</div>
+      <div class="step" id="s2">Generating 3 creative angles and copy variations...</div>
+      <div class="step" id="s3">Scoring across 8 performance dimensions...</div>
+      <div class="step" id="s4">Generating ad images (best-effort on free tier)...</div>
+    </div>
+
+    <div class="gen-row">
+      <button class="btn-generate" id="generateBtn" onclick="handleGenerate()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L8.5 5H12.5L9 7.5L10.5 12L6.5 9.5L2.5 12L4 7.5L0.5 5H4.5L6.5 1Z" fill="currentColor"/></svg>
+        Generate Studio
+      </button>
+      <button class="btn-secondary" id="resetBtn" onclick="resetAll()" disabled>Reset</button>
+      <span class="gen-note">~$0.01–0.04 per generation · images require OpenAI key</span>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="results-section" id="resultsSection">
+    <div class="section-label">02 — Generated Creatives</div>
+
+    <div class="brief-analysis" id="briefAnalysis" style="display:none">
+      <div class="label">Strategic Insight</div>
+      <div id="briefAnalysisText"></div>
+    </div>
+
+    <div class="results-header">
+      <div class="results-meta" id="resultsMeta"></div>
+      <div class="results-actions">
+        <button class="btn-sm" onclick="exportAll()">Export JSON</button>
+        <button class="btn-sm" onclick="copyAllCopy()">Copy All Copy</button>
+        <button class="btn-sm" onclick="handleGenerate()">Regenerate</button>
+      </div>
+    </div>
+
+    <div class="cards-grid" id="cardsGrid"></div>
+  </section>
+
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="exportModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">Export</div>
+    <textarea class="export-textarea" id="exportContent" readonly></textarea>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="copyExportContent()" style="font-size:11px;padding:.45rem .9rem">Copy</button>
+      <button class="btn-secondary" onclick="downloadExport()" style="font-size:11px;padding:.45rem .9rem">Download .json</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let currentResults = null;
+let inFlight = false;
+let lastBrief = null;
+const selectedPlatforms = new Set(["Meta Feed", "Meta Stories", "Google Search", "Google Display"]);
+
+// ── SAFE TEXT — escapes all dynamic content from Claude before innerHTML ──────
+function esc(val) {
+  if (val == null) return "";
+  return String(val)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+// ── PLATFORM TOGGLE ───────────────────────────────────────────────────────────
+document.querySelectorAll(".plt-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const p = btn.dataset.p;
+    if (selectedPlatforms.has(p)) {
+      if (selectedPlatforms.size <= 1) return;
+      selectedPlatforms.delete(p);
+      btn.classList.remove("on");
+    } else {
+      selectedPlatforms.add(p);
+      btn.classList.add("on");
+    }
+  });
+});
+
+// ── API FETCH — reads envelope, throws typed errors ───────────────────────────
+async function apiFetch(path, payload) {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  let env;
+  try { env = await res.json(); }
+  catch { throw Object.assign(new Error(`Server returned non-JSON (HTTP ${res.status})`), { retryable: true }); }
+  if (!res.ok || env.ok === false) {
+    const e = new Error(env?.error?.message || `HTTP ${res.status}`);
+    e.code = env?.error?.code || "UNKNOWN";
+    e.retryable = env?.error?.retryable !== false;
+    throw e;
+  }
+  return env;
+}
+
+// ── HANDLE GENERATE ───────────────────────────────────────────────────────────
+function handleGenerate() {
+  if (inFlight) return;
+
+  const product = document.getElementById("product").value.trim();
+  const description = document.getElementById("description").value.trim();
+  const audience = document.getElementById("audience").value.trim();
+
+  if (!product || !description || !audience) {
+    showError("Missing required fields", "Please fill in Product, Description, and Audience before generating.", false);
+    return;
+  }
+  if (selectedPlatforms.size === 0) {
+    showError("No platforms selected", "Select at least one platform to generate copy for.", false);
+    return;
+  }
+
+  lastBrief = {
+    product,
+    description,
+    audience,
+    platforms: [...selectedPlatforms],
+    goal: document.getElementById("goal").value,
+    tone: document.getElementById("tone").value,
+    brandVoice: document.getElementById("brandVoice").value.trim(),
+    budget: document.getElementById("budget").value.trim(),
+  };
+
+  generateCreatives(lastBrief);
+}
+
+function retryGeneration() {
+  if (lastBrief) generateCreatives(lastBrief);
+}
+
+async function generateCreatives(brief) {
+  // Disable immediately — synchronous, before any await
+  inFlight = true;
+  document.getElementById("generateBtn").disabled = true;
+  document.getElementById("resetBtn").disabled = true;
+  hideError();
+  setModePill("idle");
+  setLoading(true);
+
+  try {
+    setStep(1, "active"); setProgress(15);
+    await delay(400);
+
+    // Step 1: Generate copy + scores
+    setStep(1, "done"); setStep(2, "active"); setProgress(35);
+    const copyEnv = await apiFetch("/api/generate-creatives", brief);
+    const data = copyEnv.data;
+    const mode = copyEnv.meta?.mode || "live";
+
+    setStep(2, "done"); setStep(3, "active"); setProgress(60);
+    await delay(300);
+
+    // Step 2: Request images in parallel (best-effort — may timeout on free tier)
+    setStep(3, "done"); setStep(4, "active"); setProgress(78);
+    const imageResults = await Promise.all(
+      data.variations.map(v =>
+        apiFetch("/api/generate-image", {
+          imagePrompt: v.image_prompt,
+          variationId: v.id,
+        }).then(env => env.data).catch(() => ({ url: null, placeholder: true }))
+      )
+    );
+    imageResults.forEach((img, i) => {
+      data.variations[i].imageUrl = img?.url || null;
+      data.variations[i].imagePlaceholder = !img?.url;
+    });
+
+    setStep(4, "done"); setProgress(100);
+    await delay(250);
+
+    currentResults = { brief, ...data };
+    setModePill(mode);
+    setLoading(false);
+    renderResults(currentResults);
+    showToast("Studio generated", true);
+
+  } catch (err) {
+    setLoading(false);
+    setModePill("error");
+    showError(
+      err.code === "CLAUDE_TIMEOUT" ? "Generation timed out" : "Generation failed",
+      err.message,
+      err.retryable !== false
+    );
+    showToast("Error: " + err.message, false);
+    console.error("[generateCreatives]", err);
+  } finally {
+    inFlight = false;
+    document.getElementById("generateBtn").disabled = false;
+    document.getElementById("resetBtn").disabled = false;
+  }
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderResults(data) {
+  document.getElementById("resultsSection").classList.add("active");
+
+  const ba = document.getElementById("briefAnalysis");
+  const analysisText = data.brief_analysis || "";
+  if (analysisText) {
+    ba.style.display = "block";
+    document.getElementById("briefAnalysisText").textContent = analysisText;
+  }
+
+  document.getElementById("resultsMeta").innerHTML =
+    `${data.variations.length} variations &nbsp;·&nbsp; ${esc([...selectedPlatforms].join(" · "))} &nbsp;·&nbsp; ${new Date().toLocaleTimeString()}`;
+
+  const grid = document.getElementById("cardsGrid");
+  grid.innerHTML = "";
+  data.variations.forEach(v => grid.appendChild(buildCard(v, data.recommended_variation)));
+
+  document.getElementById("resultsSection").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ── BUILD CARD ────────────────────────────────────────────────────────────────
+function buildCard(v, recommended) {
+  const card = document.createElement("div");
+  card.className = "card" + (v.id === recommended ? " recommended" : "");
+  card.id = `card-${v.id}`;
+
+  // CTR badge
+  const ctrClass = { "top-10-percent":"badge-top","high":"badge-high","medium":"badge-medium","low":"badge-low" }[v.predicted_ctr_tier] || "badge-medium";
+  const ctrLabel = { "top-10-percent":"Top 10% CTR","high":"High CTR","medium":"Medium CTR","low":"Low CTR" }[v.predicted_ctr_tier] || v.predicted_ctr_tier || "—";
+
+  // Score bars — guard NaN
+  const scores = v.scores || {};
+  const safeScore = (key) => {
+    const n = Number(scores[key]);
+    return isNaN(n) ? 0 : Math.min(100, Math.max(0, Math.round(n)));
+  };
+  const overall = safeScore("overall");
+  const scoreColor = s => s >= 80 ? "#2ec27e" : s >= 60 ? "#f0a500" : "#e05555";
+  const dims = [
+    ["hook_strength","Hook"],["emotional_resonance","Emotion"],["clarity","Clarity"],
+    ["cta_effectiveness","CTA"],["audience_fit","Audience"],["platform_optimization","Platform"],
+    ["policy_risk","Policy Safe"],["brand_consistency","Brand"],
+  ];
+
+  // Platform tabs from actual copy keys present
+  const c = v.copy || {};
+  const tabs = [];
+  if (c.meta_feed)    tabs.push({ id:"mf", label:"Meta Feed",    data: c.meta_feed,    limits:{ primary_text:125, headline:40, description:30 } });
+  if (c.meta_stories) tabs.push({ id:"ms", label:"Stories",      data: c.meta_stories, limits:{ primary_text:90, headline:40 } });
+  if (c.google_search) tabs.push({ id:"gs", label:"GSearch",     data: c.google_search, limits:{ headline_1:30, headline_2:30, headline_3:30, description_1:90, description_2:90 } });
+  if (c.google_display) tabs.push({ id:"gd", label:"GDisplay",   data: c.google_display, limits:{ headline:30, long_headline:90, description:90 } });
+
+  card.innerHTML = `
+    <div class="card-header">
+      <div class="card-angle">${esc(v.angle || "—")}</div>
+      <div class="card-badges">
+        ${v.id === recommended ? '<span class="badge badge-rec">Recommended</span>' : ""}
+        <span class="badge ${ctrClass}">${esc(ctrLabel)}</span>
+      </div>
+    </div>
+
+    <div class="card-image" id="img-${v.id}">
+      ${v.imageUrl
+        ? `<img src="${esc(v.imageUrl)}" alt="Generated ad visual" loading="lazy">`
+        : `<div class="img-placeholder">${v.imagePlaceholder
+            ? "Image unavailable on free tier<br><span style='font-size:8px;color:var(--muted2)'>Netlify 10s limit · upgrade for reliable images</span>"
+            : "Loading image..."}</div>`}
+    </div>
+
+    <div class="score-section">
+      <div class="score-top">
+        <div class="score-num">${overall}</div>
+        <div class="score-lbl">/ 100 Creative Score</div>
+      </div>
+      <div class="score-bars">
+        ${dims.map(([key,lbl]) => {
+          const s = safeScore(key);
+          return `<div class="score-row">
+            <div class="score-name">${lbl}</div>
+            <div class="score-track"><div class="score-fill" style="width:${s}%;background:${scoreColor(s)}"></div></div>
+            <div class="score-val">${s}</div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="score-notes">${esc(v.score_notes || "")}</div>
+    </div>
+
+    <div class="copy-section">
+      <div class="tab-row">
+        ${tabs.map((t,i) => `<button class="tab${i===0?" active":""}" id="tab-${v.id}-${t.id}" onclick="switchTab(${v.id},'${t.id}')">${t.label}</button>`).join("")}
+        <button class="tab" id="tab-${v.id}-why" onclick="switchTab(${v.id},'why')">Why</button>
+      </div>
+      ${tabs.map((t,i) => `
+        <div class="copy-panel${i===0?" active":""}" id="panel-${v.id}-${t.id}">
+          ${buildCopyPanel(t.data, t.limits, v.id)}
+        </div>`).join("")}
+      <div class="copy-panel" id="panel-${v.id}-why">
+        <div class="rationale-box">${esc(v.angle_rationale || "No rationale provided.")}</div>
+      </div>
+    </div>
+
+    <div class="iterate-section">
+      <div class="iterate-label">Iterate this creative</div>
+      <div class="iterate-row">
+        <input class="iterate-input" id="iter-${v.id}" type="text" placeholder="e.g. Make the hook more urgent, simplify the CTA...">
+        <button class="btn-iterate" onclick="iterateCreative(${v.id})">Improve</button>
+      </div>
+    </div>`;
+
+  return card;
+}
+
+function buildCopyPanel(data, limits, varId) {
+  if (!data || typeof data !== "object") return '<div class="rationale-box">No copy available for this platform.</div>';
+  let html = "";
+  for (const [key, val] of Object.entries(data)) {
+    if (val == null) continue;
+    const valStr = String(val);
+    const lim = limits?.[key];
+    const over = lim && valStr.length > lim;
+    html += `<div class="copy-field">
+      <div class="copy-label">${esc(key.replace(/_/g," "))}</div>
+      <div class="copy-value" onclick="copyText(${JSON.stringify(valStr)})">${esc(valStr)}</div>
+      ${lim ? `<div class="char-count${over?" char-over":""}">${valStr.length} / ${lim}${over?" ⚠ over limit":""}</div>` : ""}
+    </div>`;
+  }
+  return html || '<div class="rationale-box">No copy fields returned for this platform.</div>';
+}
+
+// ── TAB SWITCH ────────────────────────────────────────────────────────────────
+function switchTab(varId, tabId) {
+  const card = document.getElementById(`card-${varId}`);
+  if (!card) return;
+  card.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  card.querySelectorAll(".copy-panel").forEach(p => p.classList.remove("active"));
+  const tabEl = document.getElementById(`tab-${varId}-${tabId}`);
+  const panelEl = document.getElementById(`panel-${varId}-${tabId}`);
+  if (tabEl) tabEl.classList.add("active");
+  if (panelEl) panelEl.classList.add("active");
+}
+
+// ── ITERATE ───────────────────────────────────────────────────────────────────
+async function iterateCreative(varId) {
+  const feedback = document.getElementById(`iter-${varId}`)?.value.trim();
+  if (!feedback) { showToast("Enter feedback before iterating", false); return; }
+
+  const variation = currentResults?.variations?.find(v => v.id === varId);
+  if (!variation) return;
+
+  const btn = document.querySelector(`#card-${varId} .btn-iterate`);
+  if (btn) { btn.disabled = true; btn.textContent = "Working..."; }
+
+  try {
+    const env = await apiFetch("/api/iterate-creative", {
+      original: variation,
+      feedback,
+      platform: [...selectedPlatforms][0] || "Meta Feed",
+    });
+    const iterated = env.data;
+
+    // Merge iterated copy back — only keys that were in the original variation.copy.
+    // This guards against Claude injecting platform keys not selected in the original brief.
+    if (iterated.iterated_copy) {
+      const originalKeys = new Set(Object.keys(variation.copy || {}));
+      const filtered = {};
+      for (const [k, v] of Object.entries(iterated.iterated_copy)) {
+        if (originalKeys.has(k)) filtered[k] = v;
+      }
+      Object.assign(variation.copy, filtered);
+    }
+    if (iterated.scores) Object.assign(variation.scores, iterated.scores);
+    if (iterated.improvement_rationale) variation.score_notes = iterated.improvement_rationale;
+
+    // Re-render the card
+    const card = document.getElementById(`card-${varId}`);
+    const newCard = buildCard(variation, currentResults.recommended_variation);
+    card.parentNode.replaceChild(newCard, card);
+
+    showToast("Creative improved · " + (iterated.changes_made || []).slice(0,2).join(", "), true);
+  } catch (err) {
+    showToast("Iteration failed: " + err.message, false);
+  } finally {
+    const newBtn = document.querySelector(`#card-${varId} .btn-iterate`);
+    if (newBtn) { newBtn.disabled = false; newBtn.textContent = "Improve"; }
+  }
+}
+
+// ── EXPORT ────────────────────────────────────────────────────────────────────
+function exportAll() {
+  if (!currentResults) return;
+  document.getElementById("exportContent").value = JSON.stringify(currentResults, null, 2);
+  document.getElementById("exportModal").classList.add("active");
+}
+
+function copyAllCopy() {
+  if (!currentResults) return;
+  const lines = currentResults.variations.map(v => {
+    const parts = [`=== Variation ${v.id}: ${v.angle} (Score: ${v.scores?.overall ?? "?"}) ===`];
+    for (const [plat, copy] of Object.entries(v.copy || {})) {
+      parts.push(`\n[${plat.toUpperCase()}]`);
+      for (const [k, val] of Object.entries(copy || {})) parts.push(`${k}: ${val}`);
+    }
+    return parts.join("\n");
+  }).join("\n\n");
+  navigator.clipboard.writeText(lines)
+    .then(() => showToast("All copy copied", true))
+    .catch(() => showToast("Copy failed — open over HTTPS", false));
+}
+
+function closeModal() { document.getElementById("exportModal").classList.remove("active"); }
+function copyExportContent() {
+  navigator.clipboard.writeText(document.getElementById("exportContent").value)
+    .then(() => showToast("Copied", true))
+    .catch(() => showToast("Copy failed — open over HTTPS", false));
+}
+function downloadExport() {
+  const blob = new Blob([document.getElementById("exportContent").value], { type:"application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `creatives-${Date.now()}.json`; a.click();
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+function resetAll() {
+  currentResults = null; lastBrief = null;
+  document.getElementById("resultsSection").classList.remove("active");
+  document.getElementById("cardsGrid").innerHTML = "";
+  document.getElementById("briefAnalysis").style.display = "none";
+  hideError();
+  setModePill("idle");
+  document.getElementById("resetBtn").disabled = true;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ── MODE PILL ─────────────────────────────────────────────────────────────────
+function setModePill(mode) {
+  const el = document.getElementById("modePill");
+  el.className = "mode-pill";
+  if (mode === "live") { el.classList.add("mode-live"); el.textContent = "LIVE"; }
+  else if (mode === "error") { el.classList.add("mode-error"); el.textContent = "ERROR"; }
+  else { el.classList.add("mode-idle"); el.textContent = mode === "idle" ? "GENERATING..." : "READY"; }
+}
+
+// ── ERROR STATE ───────────────────────────────────────────────────────────────
+function showError(title, msg, retryable) {
+  const el = document.getElementById("errorState");
+  document.getElementById("errorTitle").textContent = title;
+  document.getElementById("errorMsg").textContent = msg;
+  el.classList.add("visible");
+  const retryBtn = el.querySelector(".btn-retry");
+  if (retryBtn) retryBtn.style.display = retryable ? "inline-flex" : "none";
+}
+function hideError() { document.getElementById("errorState").classList.remove("visible"); }
+
+// ── LOADING ───────────────────────────────────────────────────────────────────
+function setLoading(active) {
+  document.getElementById("loadingBar").classList.toggle("active", active);
+  document.getElementById("loadingSteps").classList.toggle("active", active);
+  if (!active) {
+    document.getElementById("loadingFill").style.width = "0%";
+    ["s1","s2","s3","s4"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.className = "step";
+    });
+  }
+}
+function setStep(n, state) {
+  const el = document.getElementById(`s${n}`);
+  if (el) { el.className = "step"; if (state) el.classList.add(state); }
+}
+function setProgress(pct) {
+  document.getElementById("loadingFill").style.width = pct + "%";
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function copyText(text) {
+  navigator.clipboard.writeText(text)
+    .then(() => showToast("Copied", true))
+    .catch(() => showToast("Copy failed — open over HTTPS", false));
+}
+function showToast(msg, ok) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "toast show" + (ok ? " ok" : "");
+  setTimeout(() => { el.className = "toast"; }, 2600);
+}
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "autonomous-ad-creative-studio",
+  "version": "2.0.0",
+  "description": "AI-powered ad creative generation, scoring, and iteration — Project 001",
+  "engines": { "node": ">=18.0.0" },
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'No build step — static site with Netlify Functions'"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "openai": "^4.47.0"
+  }
+}
