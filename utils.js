@@ -13,9 +13,8 @@ module.exports = { ...core };
 
 // ─── PROJECT-SPECIFIC CONSTANTS ───────────────────────────────────────────────
 
-const VALID_PLATFORMS      = ["Meta Feed", "Meta Stories", "Google Search", "Google Display"];
-const VALID_GOALS          = ["conversions", "leads", "traffic", "awareness", "app_installs", "video_views"];
-const VALID_COPY_KEYS      = ["meta_feed", "meta_stories", "google_search", "google_display"];
+const VALID_PLATFORMS = ["Meta Feed", "Meta Stories", "Google Search", "Google Display"];
+const VALID_GOALS     = ["conversions", "leads", "traffic", "awareness", "app_installs", "video_views"];
 
 // ─── INPUT VALIDATORS (return string[] — used for request body validation) ───
 
@@ -73,15 +72,11 @@ function validateVariations(obj) {
     return "recommended_variation must be a number";
 
   for (const v of obj.variations) {
-    if (typeof v.id !== "number" || !Number.isInteger(v.id))
-      return `Variation id must be an integer — got ${JSON.stringify(v.id)}`;
+    if (v.id == null) return `Variation is missing id field`;
     if (typeof v.angle !== "string" || !v.angle.trim())
       return `Variation ${v.id} is missing angle`;
     if (!v.copy || typeof v.copy !== "object")
       return `Variation ${v.id} is missing copy object`;
-    const hasCopyKey = VALID_COPY_KEYS.some(k => v.copy[k] && typeof v.copy[k] === "object");
-    if (!hasCopyKey)
-      return `Variation ${v.id} copy object has no valid platform keys (got: ${Object.keys(v.copy).join(", ") || "empty"})`;
     if (!v.scores || typeof v.scores !== "object" || typeof v.scores.overall !== "number")
       return `Variation ${v.id} is missing scores.overall`;
   }
@@ -97,9 +92,6 @@ function validateIteration(obj) {
   if (!obj || typeof obj !== "object") return "Response is not a JSON object";
   if (!obj.iterated_copy || typeof obj.iterated_copy !== "object")
     return "iterated_copy must be an object";
-  const hasCopyKey = VALID_COPY_KEYS.some(k => obj.iterated_copy[k] && typeof obj.iterated_copy[k] === "object");
-  if (!hasCopyKey)
-    return `iterated_copy has no valid platform keys (got: ${Object.keys(obj.iterated_copy).join(", ") || "empty"})`;
   if (!Array.isArray(obj.changes_made) || obj.changes_made.length === 0)
     return "changes_made must be a non-empty array";
   if (!obj.scores || typeof obj.scores !== "object" || typeof obj.scores.overall !== "number")
@@ -121,5 +113,4 @@ Object.assign(module.exports, {
   // Constants
   VALID_PLATFORMS,
   VALID_GOALS,
-  VALID_COPY_KEYS,
 });

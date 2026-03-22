@@ -639,16 +639,8 @@ async function iterateCreative(varId) {
     });
     const iterated = env.data;
 
-    // Merge iterated copy back — only keys that were in the original variation.copy.
-    // This guards against Claude injecting platform keys not selected in the original brief.
-    if (iterated.iterated_copy) {
-      const originalKeys = new Set(Object.keys(variation.copy || {}));
-      const filtered = {};
-      for (const [k, v] of Object.entries(iterated.iterated_copy)) {
-        if (originalKeys.has(k)) filtered[k] = v;
-      }
-      Object.assign(variation.copy, filtered);
-    }
+    // Merge iterated copy back
+    if (iterated.iterated_copy) Object.assign(variation.copy, iterated.iterated_copy);
     if (iterated.scores) Object.assign(variation.scores, iterated.scores);
     if (iterated.improvement_rationale) variation.score_notes = iterated.improvement_rationale;
 
@@ -683,17 +675,11 @@ function copyAllCopy() {
     }
     return parts.join("\n");
   }).join("\n\n");
-  navigator.clipboard.writeText(lines)
-    .then(() => showToast("All copy copied", true))
-    .catch(() => showToast("Copy failed — open over HTTPS", false));
+  navigator.clipboard.writeText(lines).then(() => showToast("All copy copied", true));
 }
 
 function closeModal() { document.getElementById("exportModal").classList.remove("active"); }
-function copyExportContent() {
-  navigator.clipboard.writeText(document.getElementById("exportContent").value)
-    .then(() => showToast("Copied", true))
-    .catch(() => showToast("Copy failed — open over HTTPS", false));
-}
+function copyExportContent() { navigator.clipboard.writeText(document.getElementById("exportContent").value).then(() => showToast("Copied", true)); }
 function downloadExport() {
   const blob = new Blob([document.getElementById("exportContent").value], { type:"application/json" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
@@ -754,9 +740,7 @@ function setProgress(pct) {
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function copyText(text) {
-  navigator.clipboard.writeText(text)
-    .then(() => showToast("Copied", true))
-    .catch(() => showToast("Copy failed — open over HTTPS", false));
+  navigator.clipboard.writeText(text).then(() => showToast("Copied", true));
 }
 function showToast(msg, ok) {
   const el = document.getElementById("toast");

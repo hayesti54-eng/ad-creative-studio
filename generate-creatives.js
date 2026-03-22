@@ -119,44 +119,18 @@ Return EXACTLY this JSON:
       "score_notes": "Two sentences: top strength and main weakness",
       "predicted_ctr_tier": "low"
     },
-    {
-      "id": 2,
-      "angle": "angle name",
-      "angle_rationale": "one sentence on why this angle fits this audience",
-      "copy": {
-        "meta_feed": { "primary_text": "...", "headline": "...", "description": "...", "cta": "Shop Now" },
-        "meta_stories": { "primary_text": "...", "headline": "...", "cta": "Shop Now" },
-        "google_search": { "headline_1": "...", "headline_2": "...", "headline_3": "...", "description_1": "...", "description_2": "..." },
-        "google_display": { "headline": "...", "long_headline": "...", "description": "..." }
-      },
-      "image_prompt": "Detailed photorealistic DALL-E 3 prompt for an ad visual — no text in image",
-      "scores": { "overall": 0, "hook_strength": 0, "emotional_resonance": 0, "clarity": 0, "cta_effectiveness": 0, "audience_fit": 0, "platform_optimization": 0, "policy_risk": 0, "brand_consistency": 0 },
-      "score_notes": "Two sentences: top strength and main weakness",
-      "predicted_ctr_tier": "medium"
-    },
-    {
-      "id": 3,
-      "angle": "angle name",
-      "angle_rationale": "one sentence on why this angle fits this audience",
-      "copy": {
-        "meta_feed": { "primary_text": "...", "headline": "...", "description": "...", "cta": "Shop Now" },
-        "meta_stories": { "primary_text": "...", "headline": "...", "cta": "Shop Now" },
-        "google_search": { "headline_1": "...", "headline_2": "...", "headline_3": "...", "description_1": "...", "description_2": "..." },
-        "google_display": { "headline": "...", "long_headline": "...", "description": "..." }
-      },
-      "image_prompt": "Detailed photorealistic DALL-E 3 prompt for an ad visual — no text in image",
-      "scores": { "overall": 0, "hook_strength": 0, "emotional_resonance": 0, "clarity": 0, "cta_effectiveness": 0, "audience_fit": 0, "platform_optimization": 0, "policy_risk": 0, "brand_consistency": 0 },
-      "score_notes": "Two sentences: top strength and main weakness",
-      "predicted_ctr_tier": "high"
-    }
+    { "id": 2, "angle": "...", "angle_rationale": "...", "copy": {}, "image_prompt": "...", "scores": { "overall": 0, "hook_strength": 0, "emotional_resonance": 0, "clarity": 0, "cta_effectiveness": 0, "audience_fit": 0, "platform_optimization": 0, "policy_risk": 0, "brand_consistency": 0 }, "score_notes": "...", "predicted_ctr_tier": "medium" },
+    { "id": 3, "angle": "...", "angle_rationale": "...", "copy": {}, "image_prompt": "...", "scores": { "overall": 0, "hook_strength": 0, "emotional_resonance": 0, "clarity": 0, "cta_effectiveness": 0, "audience_fit": 0, "platform_optimization": 0, "policy_risk": 0, "brand_consistency": 0 }, "score_notes": "...", "predicted_ctr_tier": "high" }
   ],
-  "brief_analysis": "Two sentences on the key insight driving all three variations",
+  "brief_analysis": "One sentence on the key insight driving all three variations",
   "recommended_variation": 1
-}`;
+}
+
+Be concise. Every copy field must be under its character limit. score_notes is one sentence max.`;
 
   const response = await client.messages.create({
     model: "claude-sonnet-4-6",
-    max_tokens: 2500,
+    max_tokens: 1500,
     system: systemPrompt,
     messages: [{ role: "user", content: userPrompt }],
   });

@@ -64,23 +64,6 @@ exports.handler = async function (event) {
 };
 
 // ─── MODEL INVOCATION ─────────────────────────────────────────────────────────
-
-// Builds the iterated_copy JSON template using only the platform keys present in
-// the original variation copy — prevents phantom platform injection on merge.
-function buildIteratedCopyTemplate(originalCopy) {
-  const templates = {
-    meta_feed:     { primary_text: "...", headline: "...", description: "...", cta: "..." },
-    meta_stories:  { primary_text: "...", headline: "...", cta: "..." },
-    google_search: { headline_1: "...", headline_2: "...", headline_3: "...", description_1: "...", description_2: "..." },
-    google_display: { headline: "...", long_headline: "...", description: "..." },
-  };
-  const result = {};
-  for (const key of Object.keys(originalCopy || {})) {
-    if (templates[key]) result[key] = templates[key];
-  }
-  return JSON.stringify(result, null, 4);
-}
-
 async function invokeModel(apiKey, original, feedback, platform) {
   const client = new Anthropic({ apiKey });
 
@@ -88,8 +71,6 @@ async function invokeModel(apiKey, original, feedback, platform) {
 Your ENTIRE response must be ONLY the raw JSON object below. No text before it. No text after it. No markdown. Just the JSON.
 Character limits: Meta headlines ≤40 chars, Google headlines ≤30 chars, descriptions ≤90 chars.
 All score fields are integers 0–100. policy_risk is INVERTED (100 = zero risk).`;
-
-  const iteratedCopyTemplate = buildIteratedCopyTemplate(original.copy);
 
   const userPrompt = `Iterate on this ad creative based on the feedback.
 
@@ -102,9 +83,14 @@ Current copy: ${JSON.stringify(original.copy || {}, null, 2)}
 FEEDBACK: ${feedback}
 PRIMARY PLATFORM: ${platform || "Meta Feed"}
 
-Apply the feedback. Preserve what worked. Only include the SAME platforms shown in Current copy above — do not add new platforms. Return EXACTLY this JSON:
+Apply the feedback. Preserve what worked. Return EXACTLY this JSON:
 {
-  "iterated_copy": ${iteratedCopyTemplate},
+  "iterated_copy": {
+    "meta_feed": { "primary_text": "...", "headline": "...", "description": "...", "cta": "..." },
+    "meta_stories": { "primary_text": "...", "headline": "...", "cta": "..." },
+    "google_search": { "headline_1": "...", "headline_2": "...", "headline_3": "...", "description_1": "...", "description_2": "..." },
+    "google_display": { "headline": "...", "long_headline": "...", "description": "..." }
+  },
   "changes_made": ["change 1", "change 2", "change 3"],
   "rationale": "Two sentences explaining the strategic reasoning behind the changes",
   "scores": {
